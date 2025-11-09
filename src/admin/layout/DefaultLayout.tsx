@@ -1,19 +1,25 @@
-import { FC, ReactNode, useState } from "react";
-import { Navigate } from "react-router-dom";
-import { type AuthUser } from "wasp/auth";
-import Header from "./Header";
-import Sidebar from "./Sidebar";
+'use client'
+
+import { FC, ReactNode, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { useAuth } from '@/contexts/AuthContext'
+import Header from './Header'
+import Sidebar from './Sidebar'
+import type { User } from '@/types/database'
 
 interface Props {
-  user: AuthUser;
-  children?: ReactNode;
+  user: User
+  children?: ReactNode
 }
 
 const DefaultLayout: FC<Props> = ({ children, user }) => {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const router = useRouter()
+  const { user: currentUser } = useAuth()
 
-  if (!user.isAdmin) {
-    return <Navigate to="/" replace />;
+  if (!currentUser || !currentUser.is_admin) {
+    router.push('/')
+    return null
   }
 
   return (
@@ -34,7 +40,7 @@ const DefaultLayout: FC<Props> = ({ children, user }) => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default DefaultLayout;
+export default DefaultLayout
