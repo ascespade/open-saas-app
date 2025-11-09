@@ -1,30 +1,29 @@
-import { PrismaClient } from "@prisma/client";
-import type { MiddlewareConfigFn } from "wasp/server";
-import type { PaymentsWebhook } from "wasp/server/api";
-import type { PaymentPlan } from "./plans";
-import { stripePaymentProcessor } from "./stripe/paymentProcessor";
+import type { PaymentPlan } from './plans'
+import { stripePaymentProcessor } from './stripe/paymentProcessor'
 
 export interface CreateCheckoutSessionArgs {
-  userId: string;
-  userEmail: string;
-  paymentPlan: PaymentPlan;
-  prismaUserDelegate: PrismaClient["user"];
+  userId: string
+  userEmail: string
+  paymentPlan: PaymentPlan
+  updateUser: (userId: string, data: Record<string, unknown>) => Promise<void>
 }
+
 export interface FetchCustomerPortalUrlArgs {
-  userId: string;
-  prismaUserDelegate: PrismaClient["user"];
+  userId: string
+  userEmail: string
+  paymentProcessorUserId?: string
+  updateUser: (userId: string, data: Record<string, unknown>) => Promise<void>
 }
 
 export interface PaymentProcessor {
-  id: "stripe" | "lemonsqueezy";
+  id: 'stripe' | 'lemonsqueezy'
+  name: 'stripe' | 'lemonsqueezy'
   createCheckoutSession: (
     args: CreateCheckoutSessionArgs,
-  ) => Promise<{ session: { id: string; url: string } }>;
-  fetchCustomerPortalUrl: (
+  ) => Promise<{ session: { id: string; url: string } }>
+  getCustomerPortalUrl: (
     args: FetchCustomerPortalUrlArgs,
-  ) => Promise<string | null>;
-  webhook: PaymentsWebhook;
-  webhookMiddlewareConfigFn: MiddlewareConfigFn;
+  ) => Promise<string | null>
 }
 
 /**
@@ -32,4 +31,4 @@ export interface PaymentProcessor {
  * other payment processor code that you're not using  from `/src/payment`
  */
 // export const paymentProcessor: PaymentProcessor = lemonSqueezyPaymentProcessor;
-export const paymentProcessor: PaymentProcessor = stripePaymentProcessor;
+export const paymentProcessor: PaymentProcessor = stripePaymentProcessor

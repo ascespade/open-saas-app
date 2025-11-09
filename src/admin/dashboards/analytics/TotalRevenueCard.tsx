@@ -1,8 +1,10 @@
-import { ArrowDown, ArrowUp, ShoppingCart } from "lucide-react";
-import { useMemo } from "react";
-import { type DailyStatsProps } from "../../../analytics/stats";
-import { Card, CardContent, CardHeader } from "../../../components/ui/card";
-import { cn } from "../../../lib/utils";
+'use client'
+
+import { ArrowDown, ArrowUp, ShoppingCart } from 'lucide-react'
+import { useMemo } from 'react'
+import type { DailyStatsProps } from '../../../analytics/stats'
+import { Card, CardContent, CardHeader } from '../../../components/ui/card'
+import { cn } from '../../../lib/utils'
 
 const TotalRevenueCard = ({
   dailyStats,
@@ -10,26 +12,26 @@ const TotalRevenueCard = ({
   isLoading,
 }: DailyStatsProps) => {
   const isDeltaPositive = useMemo(() => {
-    if (!weeklyStats) return false;
-    return weeklyStats[0].totalRevenue - weeklyStats[1]?.totalRevenue > 0;
-  }, [weeklyStats]);
+    if (!weeklyStats || weeklyStats.length < 2) return false
+    return (weeklyStats[0]?.total_revenue || 0) - (weeklyStats[1]?.total_revenue || 0) > 0
+  }, [weeklyStats])
 
   const deltaPercentage = useMemo(() => {
-    if (!weeklyStats || weeklyStats.length < 2 || isLoading) return;
+    if (!weeklyStats || weeklyStats.length < 2 || isLoading) return
     if (
-      weeklyStats[1]?.totalRevenue === 0 ||
-      weeklyStats[0]?.totalRevenue === 0
+      (weeklyStats[1]?.total_revenue || 0) === 0 ||
+      (weeklyStats[0]?.total_revenue || 0) === 0
     )
-      return 0;
+      return 0
 
-    weeklyStats.sort((a, b) => b.id - a.id);
+    const sorted = [...weeklyStats].sort((a, b) => b.id - a.id)
 
     const percentage =
-      ((weeklyStats[0].totalRevenue - weeklyStats[1]?.totalRevenue) /
-        weeklyStats[1]?.totalRevenue) *
-      100;
-    return Math.floor(percentage);
-  }, [weeklyStats]);
+      ((sorted[0]?.total_revenue || 0) - (sorted[1]?.total_revenue || 0)) /
+      (sorted[1]?.total_revenue || 1) *
+      100
+    return Math.floor(percentage)
+  }, [weeklyStats, isLoading])
 
   return (
     <Card>
@@ -42,7 +44,7 @@ const TotalRevenueCard = ({
       <CardContent className="flex justify-between">
         <div>
           <h4 className="text-title-md text-foreground font-bold">
-            ${dailyStats?.totalRevenue}
+            ${dailyStats?.total_revenue || 0}
           </h4>
           <span className="text-muted-foreground text-sm font-medium">
             Total Revenue
@@ -50,20 +52,20 @@ const TotalRevenueCard = ({
         </div>
 
         <span
-          className={cn("flex items-center gap-1 text-sm font-medium", {
-            "text-success":
+          className={cn('flex items-center gap-1 text-sm font-medium', {
+            'text-success':
               isDeltaPositive && !isLoading && deltaPercentage !== 0,
-            "text-destructive":
+            'text-destructive':
               !isDeltaPositive && !isLoading && deltaPercentage !== 0,
-            "text-muted-foreground":
+            'text-muted-foreground':
               isLoading || !deltaPercentage || deltaPercentage === 0,
           })}
         >
           {isLoading
-            ? "..."
+            ? '...'
             : deltaPercentage && deltaPercentage !== 0
               ? `${deltaPercentage}%`
-              : "-"}
+              : '-'}
           {!isLoading &&
             deltaPercentage &&
             deltaPercentage !== 0 &&
@@ -71,7 +73,7 @@ const TotalRevenueCard = ({
         </span>
       </CardContent>
     </Card>
-  );
-};
+  )
+}
 
-export default TotalRevenueCard;
+export default TotalRevenueCard

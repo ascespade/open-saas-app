@@ -12,10 +12,10 @@ export default function Clients() {
 
       <div className="mx-auto grid max-w-lg grid-cols-2 items-center gap-x-8 gap-y-12 sm:max-w-xl sm:gap-x-10 sm:gap-y-14 md:grid-cols-4 lg:mx-0 lg:max-w-none">
         {[
-          <SalesforceLogo />,
-          <PrismaLogo />,
-          <AstroLogo />,
-          <OpenAILogo />,
+          <SalesforceLogo key="salesforce" />,
+          <PrismaLogo key="prisma" />,
+          <AstroLogo key="astro" />,
+          <OpenAILogo key="openai" />,
         ].map((logo, index) => (
           <div
             key={index}

@@ -1,213 +1,160 @@
-import { listOrders } from "@lemonsqueezy/lemonsqueezy.js";
-import Stripe from "stripe";
-import { type DailyStats } from "wasp/entities";
-import { type DailyStatsJob } from "wasp/server/jobs";
-import { stripe } from "../payment/stripe/stripeClient";
+import { listOrders } from '@lemonsqueezy/lemonsqueezy.js'
+import Stripe from 'stripe'
+import type { DailyStats } from '@/types/database'
+import { stripe } from '../payment/stripe/stripeClient'
 import {
   getDailyPageViews,
   getSources,
-} from "./providers/plausibleAnalyticsUtils";
+} from './providers/plausibleAnalyticsUtils'
 // import { getDailyPageViews, getSources } from './providers/googleAnalyticsUtils';
-import { paymentProcessor } from "../payment/paymentProcessor";
-import { SubscriptionStatus } from "../payment/plans";
+import { paymentProcessor } from '../payment/paymentProcessor'
+import { SubscriptionStatus } from '../payment/plans'
 
 export type DailyStatsProps = {
-  dailyStats?: DailyStats;
-  weeklyStats?: DailyStats[];
-  isLoading?: boolean;
-};
-
-export const calculateDailyStats: DailyStatsJob<never, void> = async (
-  _args,
-  context,
-) => {
-  const nowUTC = new Date(Date.now());
-  nowUTC.setUTCHours(0, 0, 0, 0);
-
-  const yesterdayUTC = new Date(nowUTC);
-  yesterdayUTC.setUTCDate(yesterdayUTC.getUTCDate() - 1);
-
-  try {
-    const yesterdaysStats = await context.entities.DailyStats.findFirst({
-      where: {
-        date: {
-          equals: yesterdayUTC,
-        },
-      },
-    });
-
-    const userCount = await context.entities.User.count({});
-    // users can have paid but canceled subscriptions which terminate at the end of the period
-    // we don't want to count those users as current paying users
-    const paidUserCount = await context.entities.User.count({
-      where: {
-        subscriptionStatus: SubscriptionStatus.Active,
-      },
-    });
-
-    let userDelta = userCount;
-    let paidUserDelta = paidUserCount;
-    if (yesterdaysStats) {
-      userDelta -= yesterdaysStats.userCount;
-      paidUserDelta -= yesterdaysStats.paidUserCount;
-    }
-
-    let totalRevenue;
-    switch (paymentProcessor.id) {
-      case "stripe":
-        totalRevenue = await fetchTotalStripeRevenue();
-        break;
-      case "lemonsqueezy":
-        totalRevenue = await fetchTotalLemonSqueezyRevenue();
-        break;
-      default:
-        throw new Error(
-          `Unsupported payment processor: ${paymentProcessor.id}`,
-        );
-    }
-
-    const { totalViews, prevDayViewsChangePercent } = await getDailyPageViews();
-
-    let dailyStats = await context.entities.DailyStats.findUnique({
-      where: {
-        date: nowUTC,
-      },
-    });
-
-    if (!dailyStats) {
-      console.log("No daily stat found for today, creating one...");
-      dailyStats = await context.entities.DailyStats.create({
-        data: {
-          date: nowUTC,
-          totalViews,
-          prevDayViewsChangePercent,
-          userCount,
-          paidUserCount,
-          userDelta,
-          paidUserDelta,
-          totalRevenue,
-        },
-      });
-    } else {
-      console.log("Daily stat found for today, updating it...");
-      dailyStats = await context.entities.DailyStats.update({
-        where: {
-          id: dailyStats.id,
-        },
-        data: {
-          totalViews,
-          prevDayViewsChangePercent,
-          userCount,
-          paidUserCount,
-          userDelta,
-          paidUserDelta,
-          totalRevenue,
-        },
-      });
-    }
-    const sources = await getSources();
-
-    for (const source of sources) {
-      let visitors = source.visitors;
-      if (typeof source.visitors !== "number") {
-        visitors = parseInt(source.visitors);
-      }
-      await context.entities.PageViewSource.upsert({
-        where: {
-          date_name: {
-            date: nowUTC,
-            name: source.source,
-          },
-        },
-        create: {
-          date: nowUTC,
-          name: source.source,
-          visitors,
-          dailyStatsId: dailyStats.id,
-        },
-        update: {
-          visitors,
-        },
-      });
-    }
-
-    console.table({ dailyStats });
-  } catch (error: any) {
-    console.error("Error calculating daily stats: ", error);
-    await context.entities.Logs.create({
-      data: {
-        message: `Error calculating daily stats: ${error?.message}`,
-        level: "job-error",
-      },
-    });
-  }
-};
-
-async function fetchTotalStripeRevenue() {
-  let totalRevenue = 0;
-  let params: Stripe.BalanceTransactionListParams = {
-    limit: 100,
-    // created: {
-    //   gte: startTimestamp,
-    //   lt: endTimestamp
-    // },
-    type: "charge",
-  };
-
-  let hasMore = true;
-  while (hasMore) {
-    const balanceTransactions = await stripe.balanceTransactions.list(params);
-
-    for (const transaction of balanceTransactions.data) {
-      if (transaction.type === "charge") {
-        totalRevenue += transaction.amount;
-      }
-    }
-
-    if (balanceTransactions.has_more) {
-      // Set the starting point for the next iteration to the last object fetched
-      params.starting_after =
-        balanceTransactions.data[balanceTransactions.data.length - 1].id;
-    } else {
-      hasMore = false;
-    }
-  }
-
-  // Revenue is in cents so we convert to dollars (or your main currency unit)
-  return totalRevenue / 100;
+  dailyStats?: DailyStats
+  weeklyStats?: DailyStats[]
+  isLoading?: boolean
 }
 
-async function fetchTotalLemonSqueezyRevenue() {
+// This function will be called by a cron job or API route
+export const calculateDailyStats = async (supabase: ReturnType<typeof import('@supabase/supabase-js').createClient>) => {
+  const nowUTC = new Date(Date.now())
+  nowUTC.setUTCHours(0, 0, 0, 0)
+
+  const yesterdayUTC = new Date(nowUTC)
+  yesterdayUTC.setUTCDate(yesterdayUTC.getUTCDate() - 1)
+
   try {
-    let totalRevenue = 0;
-    let hasNextPage = true;
-    let currentPage = 1;
+    // Get yesterday's stats
+    const { data: yesterdaysStats } = await supabase
+      .from('daily_stats')
+      .select('*')
+      .eq('date', yesterdayUTC.toISOString())
+      .single()
 
-    while (hasNextPage) {
-      const { data: response } = await listOrders({
-        filter: {
-          storeId: process.env.LEMONSQUEEZY_STORE_ID,
-        },
-        page: {
-          number: currentPage,
-          size: 100,
-        },
-      });
+    // Get user count
+    const { count: userCount } = await supabase
+      .from('users')
+      .select('*', { count: 'exact', head: true })
 
-      if (response?.data) {
-        for (const order of response.data) {
-          totalRevenue += order.attributes.total;
-        }
-      }
+    // Get paid user count (active subscriptions only)
+    const { count: paidUserCount } = await supabase
+      .from('users')
+      .select('*', { count: 'exact', head: true })
+      .eq('subscription_status', SubscriptionStatus.Active)
 
-      hasNextPage = !response?.meta?.page.lastPage;
-      currentPage++;
+    let userDelta = userCount || 0
+    let paidUserDelta = paidUserCount || 0
+    if (yesterdaysStats) {
+      userDelta = (userCount || 0) - yesterdaysStats.user_count
+      paidUserDelta = (paidUserCount || 0) - yesterdaysStats.paid_user_count
     }
 
-    // Revenue is in cents so we convert to dollars (or your main currency unit)
-    return totalRevenue / 100;
+    // Get page views and sources from analytics provider
+    const pageViews = await getDailyPageViews()
+    const sources = await getSources()
+
+    let prevDayViewsChangePercent = '0'
+    if (yesterdaysStats && yesterdaysStats.total_views > 0) {
+      const change =
+        ((pageViews - yesterdaysStats.total_views) /
+          yesterdaysStats.total_views) *
+        100
+      prevDayViewsChangePercent = change.toFixed(2)
+    }
+
+    // Calculate revenue from payment processor
+    const { totalRevenue, totalProfit } = await calculateRevenue(supabase)
+
+    // Create or update today's stats
+    const { data: existingStats } = await supabase
+      .from('daily_stats')
+      .select('*')
+      .eq('date', nowUTC.toISOString())
+      .single()
+
+    const statsData = {
+      date: nowUTC.toISOString(),
+      total_views: pageViews,
+      prev_day_views_change_percent: prevDayViewsChangePercent,
+      user_count: userCount || 0,
+      paid_user_count: paidUserCount || 0,
+      user_delta: userDelta,
+      paid_user_delta: paidUserDelta,
+      total_revenue: totalRevenue,
+      total_profit: totalProfit,
+    }
+
+    if (existingStats) {
+      await supabase
+        .from('daily_stats')
+        .update(statsData)
+        .eq('id', existingStats.id)
+    } else {
+      const { data: newStats } = await supabase
+        .from('daily_stats')
+        .insert(statsData)
+        .select()
+        .single()
+
+      // Insert page view sources
+      if (newStats && sources) {
+        const sourcesData = sources.map((source) => ({
+          date: nowUTC.toISOString(),
+          name: source.name,
+          visitors: source.visitors,
+          daily_stats_id: newStats.id,
+        }))
+
+        await supabase.from('page_view_sources').insert(sourcesData)
+      }
+    }
   } catch (error) {
-    console.error("Error fetching Lemon Squeezy revenue:", error);
-    throw error;
+    console.error('Error calculating daily stats:', error)
+    throw error
   }
+}
+
+async function calculateRevenue(supabase: ReturnType<typeof import('@supabase/supabase-js').createClient>) {
+  let totalRevenue = 0
+  let totalProfit = 0
+
+  try {
+    // Calculate revenue from Stripe
+    if (paymentProcessor.name === 'stripe') {
+      const stripeOrders = await stripe.charges.list({
+        limit: 100,
+        created: {
+          gte: Math.floor(new Date().setUTCHours(0, 0, 0, 0) / 1000),
+        },
+      })
+
+      totalRevenue = stripeOrders.data.reduce(
+        (sum, charge) => sum + (charge.amount || 0) / 100,
+        0,
+      )
+      totalProfit = totalRevenue * 0.9 // Assuming 10% fees
+    }
+
+    // Calculate revenue from Lemon Squeezy
+    if (paymentProcessor.name === 'lemonsqueezy') {
+      const orders = await listOrders({
+        filter: {
+          created_at: {
+            gte: new Date().toISOString().split('T')[0],
+          },
+        },
+      })
+
+      totalRevenue = orders.data?.reduce(
+        (sum, order) => sum + (parseFloat(order.attributes.total) || 0),
+        0,
+      ) || 0
+      totalProfit = totalRevenue * 0.9 // Assuming 10% fees
+    }
+  } catch (error) {
+    console.error('Error calculating revenue:', error)
+  }
+
+  return { totalRevenue, totalProfit }
 }

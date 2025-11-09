@@ -88,7 +88,7 @@ export default function AccountPage({ user }: { user: User }) {
                   About
                 </div>
                 <div className="text-foreground mt-1 text-sm sm:col-span-2 sm:mt-0">
-                  I'm a cool customer.
+                  I&apos;m a cool customer.
                 </div>
               </div>
             </div>
