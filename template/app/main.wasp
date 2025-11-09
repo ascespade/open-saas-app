@@ -11,7 +11,7 @@ app OpenSaaS {
     "<meta name='description' content='Your apps main description and features.' />",
     "<meta name='author' content='Your (App) Name' />",
     "<meta name='keywords' content='saas, solution, product, app, service' />",
-    
+
     "<meta property='og:type' content='website' />",
     "<meta property='og:title' content='Your Open SaaS App' />",
     "<meta property='og:site_name' content='Your Open SaaS App' />",
@@ -304,8 +304,42 @@ page NotFoundPage {
 }
 //#endregion
 
+//#region Page Builder
+route PageBuilderListRoute { path: "/page-builder", to: PageBuilderListPage }
+page PageBuilderListPage {
+  authRequired: true,
+  component: import PageBuilderListPage from "@src/page-builder/PageListPage"
+}
+
+route PageBuilderRoute { path: "/page-builder/edit", to: PageBuilderPage }
+page PageBuilderPage {
+  authRequired: true,
+  component: import PageBuilderPage from "@src/page-builder/PageBuilderPage"
+}
+
+query getPage {
+  fn: import { getPage } from "@src/page-builder/operations",
+  entities: [Page, User]
+}
+
+query getUserPages {
+  fn: import { getUserPages } from "@src/page-builder/operations",
+  entities: [Page, User]
+}
+
+action savePage {
+  fn: import { savePage } from "@src/page-builder/operations",
+  entities: [Page, User]
+}
+
+action deletePage {
+  fn: import { deletePage } from "@src/page-builder/operations",
+  entities: [Page, User]
+}
+//#endregion
+
 //#region Contact Form Messages
-// TODO: 
+// TODO:
 // add functionality to allow users to send messages to admin
 // and make them accessible via the admin dashboard
 route AdminMessagesRoute { path: "/admin/messages", to: AdminMessagesPage }

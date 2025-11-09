@@ -26,6 +26,7 @@ model User {
   contactFormMessages       ContactFormMessage[]
   tasks                     Task[]
   files                     File[]
+  pages                     Page[]
 }
 
 model GptResponse {
@@ -108,4 +109,44 @@ model ContactFormMessage {
   content                   String
   isRead                    Boolean         @default(false)
   repliedAt                 DateTime?
+}
+
+model Page {
+  id                        String          @id @default(uuid())
+  createdAt                 DateTime        @default(now())
+  updatedAt                 DateTime        @updatedAt
+
+  user                      User            @relation(fields: [userId], references: [id])
+  userId                    String
+
+  name                      String
+  slug                      String
+  isPublished               Boolean         @default(false)
+  publishedAt               DateTime?
+
+  // JSON structure for the page components
+  componentTree             String          // JSON string of the component tree
+
+  components                Component[]
+}
+
+model Component {
+  id                        String          @id @default(uuid())
+  createdAt                 DateTime        @default(now())
+  updatedAt                 DateTime        @updatedAt
+
+  page                      Page            @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  pageId                    String
+
+  // Component structure
+  type                      String          // 'container', 'text', 'button', 'image', etc.
+  componentId               String          // Unique ID within the page tree
+  parentId                  String?         // Parent component ID (null for root)
+
+  // Component data (JSON)
+  props                     String          // JSON string of component props
+  styles                    String          // JSON string of CSS styles
+
+  // Position in tree
+  order                     Int             @default(0)
 }
