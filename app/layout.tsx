@@ -1,10 +1,7 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import '../src/client/Main.css'
-import { Toaster } from '@/src/components/ui/toaster'
-import { AuthProvider } from '@/contexts/AuthContext'
-import CookieConsentBanner from '@/src/client/components/cookie-consent/Banner'
-import { AppLayout } from '@/components/layout/AppLayout'
+import { ClientProviders } from '@/components/providers/ClientProviders'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -37,14 +34,10 @@ export default function RootLayout({
         <meta name="twitter:image:height" content="400" />
         <meta name="twitter:card" content="summary_large_image" />
       </head>
-      <body className={inter.className}>
-        <AuthProvider>
-          <AppLayout>
-            {children}
-          </AppLayout>
-          <Toaster />
-          <CookieConsentBanner />
-        </AuthProvider>
+      <body className={inter.className} suppressHydrationWarning>
+        <ClientProviders>
+          {children}
+        </ClientProviders>
       </body>
     </html>
   )

@@ -59,7 +59,14 @@ const getConfig = () => {
               try {
                 const GA_ANALYTICS_ID = process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID
                 if (!GA_ANALYTICS_ID || GA_ANALYTICS_ID.length === 0) {
-                  throw new Error('Google Analytics ID is missing')
+                  // Silently skip if GA ID is not configured (development mode)
+                  if (process.env.NODE_ENV === 'development') {
+                    console.debug('Google Analytics ID is not configured. Skipping GA initialization.')
+                    return
+                  }
+                  // In production, log a warning but don't throw
+                  console.warn('Google Analytics ID is missing. Analytics will not be initialized.')
+                  return
                 }
                 window.dataLayer = window.dataLayer || []
                 function gtag(...args: unknown[]) {
@@ -71,9 +78,13 @@ const getConfig = () => {
                 const script = document.createElement('script')
                 script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_ANALYTICS_ID}`
                 script.async = true
+                script.onerror = () => {
+                  console.warn('Failed to load Google Analytics script. This is normal if GA ID is not configured.')
+                }
                 document.body.appendChild(script)
               } catch (error) {
-                console.error(error)
+                // Log error but don't break the app
+                console.warn('Error initializing Google Analytics:', error)
               }
             },
             onReject: () => {},

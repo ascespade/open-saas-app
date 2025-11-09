@@ -24,16 +24,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const supabase = createClient()
 
   const fetchUser = async (authUserId: string) => {
-    const { data, error } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', authUserId)
-      .single()
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', authUserId)
+        .single()
 
-    if (!error && data) {
-      setUser(data)
-    } else {
-      setUser(null)
+      if (!error && data) {
+        setUser(data)
+      } else {
+        // Handle different error cases
+        if (error?.code === '42P01' || error?.message?.includes('does not exist')) {
+          console.warn('Users table does not exist. Please run database migration.')
+          setUser(null)
+        } else if (error?.code === 'PGRST116') {
+          // No rows returned - user record doesn't exist yet
+          console.warn('User record not found in users table. This may be normal if the trigger hasn\'t run yet.')
+          setUser(null)
+        } else if (error?.code === '42501' || error?.message?.includes('permission denied')) {
+          // RLS policy issue
+          console.error('RLS policy error - user may not have permission to read their own data:', error.message)
+          setUser(null)
+        } else if (error) {
+          // Other errors (including 500)
+          console.error('Error fetching user:', error.code, error.message)
+          // Don't set user to null on 500 errors - might be temporary
+          // The user is authenticated, so we'll keep trying
+        }
+      }
+    } catch (err) {
+      console.error('Exception fetching user:', err)
+      // Don't set user to null on exceptions - might be temporary network issues
     }
   }
 
@@ -64,6 +86,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => {
       subscription.unsubscribe()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const signUp = async (email: string, password: string, username?: string) => {
@@ -98,8 +121,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     if (data.user) {
       setAuthUser(data.user)
-      await fetchUser(data.user.id)
+      // Fetch user data - don't wait for it to complete, but start it
+      fetchUser(data.user.id).catch(err => {
+        console.warn('Error fetching user after login (non-critical):', err)
+      })
+
+      // Return the session data so the caller knows login succeeded
+      return { user: data.user, session: data.session }
     }
+
+    throw new Error('No user returned from sign in')
   }
 
   const signOut = async () => {
