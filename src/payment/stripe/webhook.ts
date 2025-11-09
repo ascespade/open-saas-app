@@ -22,7 +22,7 @@ import {
 export const stripeWebhook = async (
   request: express.Request,
   response: express.Response,
-  context: { supabase: any },
+  context: { supabase: ReturnType<typeof import('@supabase/supabase-js').createClient> },
 ) => {
   try {
     const rawStripeEvent = constructStripeEvent(request)
@@ -74,7 +74,7 @@ function constructStripeEvent(request: express.Request): Stripe.Event {
 
 async function handleCheckoutSessionCompleted(
   session: SessionCompletedData,
-  supabase: any,
+  supabase: ReturnType<typeof import('@supabase/supabase-js').createClient>,
 ) {
   const isSuccessfulOneTimePayment =
     session.mode === 'payment' && session.payment_status === 'paid'
@@ -85,7 +85,7 @@ async function handleCheckoutSessionCompleted(
 
 async function saveSuccessfulOneTimePayment(
   session: SessionCompletedData,
-  supabase: any,
+  supabase: ReturnType<typeof import('@supabase/supabase-js').createClient>,
 ) {
   const userStripeId = session.customer
   const lineItems = await getCheckoutLineItemsBySessionId(session.id)
@@ -104,14 +104,14 @@ async function saveSuccessfulOneTimePayment(
 
 async function handleInvoicePaid(
   invoice: InvoicePaidData,
-  supabase: any,
+  supabase: ReturnType<typeof import('@supabase/supabase-js').createClient>,
 ) {
   await saveActiveSubscription(invoice, supabase)
 }
 
 async function saveActiveSubscription(
   invoice: InvoicePaidData,
-  supabase: any,
+  supabase: ReturnType<typeof import('@supabase/supabase-js').createClient>,
 ) {
   const userStripeId = invoice.customer
   const datePaid = new Date(invoice.period_start * 1000)
@@ -130,7 +130,7 @@ async function saveActiveSubscription(
 
 async function handleCustomerSubscriptionUpdated(
   subscription: SubscriptionUpdatedData,
-  supabase: any,
+  supabase: ReturnType<typeof import('@supabase/supabase-js').createClient>,
 ) {
   const userStripeId = subscription.customer
   let subscriptionStatus: SubscriptionStatus | undefined
@@ -155,7 +155,7 @@ async function handleCustomerSubscriptionUpdated(
 
 async function handleCustomerSubscriptionDeleted(
   subscription: SubscriptionDeletedData,
-  supabase: any,
+  supabase: ReturnType<typeof import('@supabase/supabase-js').createClient>,
 ) {
   const userStripeId = subscription.customer
   return updateUserStripePaymentDetails(

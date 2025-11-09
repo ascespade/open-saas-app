@@ -64,7 +64,7 @@ export function LoginForm() {
       </Button>
       <div className="text-sm text-center space-y-2">
         <div>
-          Don't have an account yet?{' '}
+          Don&apos;t have an account yet?{' '}
           <Link href="/signup" className="underline">
             go to signup
           </Link>

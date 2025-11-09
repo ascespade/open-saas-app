@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
       userEmail: user.email,
       paymentProcessorUserId: user.payment_processor_user_id || undefined,
       // Pass Supabase client for user updates
-      updateUser: async (userId: string, data: any) => {
+      updateUser: async (userId: string, data: Record<string, unknown>) => {
         const { error } = await supabase
           .from('users')
           .update(data)

@@ -5,14 +5,14 @@ export interface CreateCheckoutSessionArgs {
   userId: string
   userEmail: string
   paymentPlan: PaymentPlan
-  updateUser: (userId: string, data: any) => Promise<void>
+  updateUser: (userId: string, data: Record<string, unknown>) => Promise<void>
 }
 
 export interface FetchCustomerPortalUrlArgs {
   userId: string
   userEmail: string
   paymentProcessorUserId?: string
-  updateUser: (userId: string, data: any) => Promise<void>
+  updateUser: (userId: string, data: Record<string, unknown>) => Promise<void>
 }
 
 export interface PaymentProcessor {

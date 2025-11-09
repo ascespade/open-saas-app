@@ -16,7 +16,7 @@ export const updateUserStripePaymentDetails = async (
     numOfCreditsPurchased?: number
     datePaid?: Date
   },
-  supabase: any,
+  supabase: ReturnType<typeof import('@supabase/supabase-js').createClient>,
 ): Promise<User> => {
   // First, find the user by payment processor user ID
   const { data: user, error: findError } = await supabase
@@ -30,7 +30,7 @@ export const updateUserStripePaymentDetails = async (
   }
 
   // Prepare update data
-  const updateData: any = {
+  const updateData: Record<string, unknown> = {
     payment_processor_user_id: userStripeId,
   }
 

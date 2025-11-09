@@ -5,7 +5,7 @@ import type { GeneratedSchedule, Task as ScheduleTask, TaskItem, TaskPriority } 
 import type { Task } from '@/types/database'
 
 const openAi = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: process.env.OPENAI_API_KEY || '',
 })
 
 async function generateScheduleWithGpt(
@@ -180,8 +180,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Validate OpenAI API key
+    if (!process.env.OPENAI_API_KEY) {
+      return NextResponse.json(
+        { error: 'OpenAI API key not configured' },
+        { status: 500 }
+      )
+    }
+
     // Generate schedule with GPT
-    console.log('Calling OpenAI API')
     const generatedSchedule = await generateScheduleWithGpt(
       tasks || [],
       hours,
@@ -210,7 +217,6 @@ export async function POST(request: NextRequest) {
 
     // Decrement credits if not subscribed
     if (!isSubscribed && user.credits > 0) {
-      console.log('Decrementing credits and saving response')
       const { error: updateError } = await supabase
         .from('users')
         .update({ credits: user.credits - 1 })
@@ -218,6 +224,7 @@ export async function POST(request: NextRequest) {
 
       if (updateError) {
         console.error('Error decrementing credits:', updateError)
+        // Log error but don't fail the request since response was already saved
       }
     }
 

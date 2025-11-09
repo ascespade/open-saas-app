@@ -42,8 +42,8 @@ export default function DemoAppPage() {
           </h2>
         </div>
         <p className="text-muted-foreground mx-auto mt-6 max-w-2xl text-center text-lg leading-8">
-          This example app uses OpenAI's chat completions with function calling
-          to return a structured JSON object. Try it out, enter your day's
+          This example app uses OpenAI&apos;s chat completions with function calling
+          to return a structured JSON object. Try it out, enter your day&apos;s
           tasks, and let AI do the rest!
         </p>
         {/* begin AI-powered Todo List */}
@@ -275,7 +275,7 @@ function NewTaskForm({
       {!!response && (
         <div className="flex flex-col">
           <h3 className="text-foreground mb-4 text-lg font-semibold">
-            Today's Schedule
+            Today&apos;s Schedule
           </h3>
           <Schedule schedule={response} />
         </div>
@@ -386,7 +386,7 @@ function Schedule({ schedule }: { schedule: GeneratedSchedule }) {
             })
         ) : (
           <div className="text-muted-foreground text-center">
-            OpenAI didn't return any Tasks. Try again.
+            OpenAI didn&apos;t return any Tasks. Try again.
           </div>
         )}
       </div>
@@ -432,7 +432,7 @@ function TaskCard({
           </ul>
         ) : (
           <div className="text-muted-foreground text-center">
-            OpenAI didn't return any Task Items. Try again.
+            OpenAI didn&apos;t return any Task Items. Try again.
           </div>
         )}
       </CardContent>

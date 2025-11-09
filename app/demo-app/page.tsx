@@ -33,8 +33,8 @@ export default function DemoAppPage() {
           </h2>
         </div>
         <p className="text-muted-foreground mx-auto mt-6 max-w-2xl text-center text-lg leading-8">
-          This example app uses OpenAI's chat completions with function calling
-          to return a structured JSON object. Try it out, enter your day's
+          This example app uses OpenAI&apos;s chat completions with function calling
+          to return a structured JSON object. Try it out, enter your day&apos;s
           tasks, and let AI do the rest!
         </p>
         {/* begin AI-powered Todo List */}
@@ -123,8 +123,9 @@ function NewTaskForm() {
     try {
       await createTask(description)
       setDescription('')
-    } catch (err: any) {
-      window.alert('Error: ' + (err.message || 'Something went wrong'))
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Something went wrong'
+      window.alert('Error: ' + errorMessage)
     }
   }
 
@@ -135,8 +136,9 @@ function NewTaskForm() {
       if (schedule) {
         setResponse(schedule)
       }
-    } catch (err: any) {
-      if (err.message?.includes('402') || err.message?.includes('credits')) {
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : ''
+      if (errorMessage.includes('402') || errorMessage.includes('credits')) {
         toast({
           title: '⚠️ You are out of credits!',
           style: {
@@ -156,7 +158,7 @@ function NewTaskForm() {
       } else {
         toast({
           title: 'Error',
-          description: err.message || 'Something went wrong',
+          description: errorMessage || 'Something went wrong',
           variant: 'destructive',
         })
       }
@@ -261,7 +263,7 @@ function NewTaskForm() {
       {!!response && (
         <div className="flex flex-col">
           <h3 className="text-foreground mb-4 text-lg font-semibold">
-            Today's Schedule
+            Today&apos;s Schedule
           </h3>
           <Schedule schedule={response} />
         </div>

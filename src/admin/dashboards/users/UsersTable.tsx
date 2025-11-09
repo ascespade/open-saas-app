@@ -22,14 +22,14 @@ import LoadingSpinner from '../../layout/LoadingSpinner'
 import DropdownEditDelete from './DropdownEditDelete'
 import type { User } from '@/types/database'
 
-function AdminSwitch({ id, isAdmin }: Pick<User, 'id' | 'is_admin'>) {
+function AdminSwitch({ id, is_admin }: Pick<User, 'id' | 'is_admin'>) {
   const { user: currentUser } = useAuth()
   const { updateIsUserAdminById, loading } = useUsers()
   const isCurrentUser = currentUser?.id === id
 
   return (
     <Switch
-      checked={isAdmin}
+      checked={is_admin}
       onCheckedChange={async (value) => {
         try {
           await updateIsUserAdminById(id, value)

@@ -17,7 +17,7 @@ export type DailyStatsProps = {
 }
 
 // This function will be called by a cron job or API route
-export const calculateDailyStats = async (supabase: any) => {
+export const calculateDailyStats = async (supabase: ReturnType<typeof import('@supabase/supabase-js').createClient>) => {
   const nowUTC = new Date(Date.now())
   nowUTC.setUTCHours(0, 0, 0, 0)
 
@@ -115,7 +115,7 @@ export const calculateDailyStats = async (supabase: any) => {
   }
 }
 
-async function calculateRevenue(supabase: any) {
+async function calculateRevenue(supabase: ReturnType<typeof import('@supabase/supabase-js').createClient>) {
   let totalRevenue = 0
   let totalProfit = 0
 

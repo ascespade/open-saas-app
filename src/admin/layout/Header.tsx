@@ -8,7 +8,7 @@ import MessageButton from '@/src/admin/dashboards/messages/MessageButton'
 import type { User } from '@/types/database'
 
 const Header = (props: {
-  sidebarOpen: string | boolean | undefined
+  sidebarOpen: boolean
   setSidebarOpen: (arg0: boolean) => void
   user: User
 }) => {

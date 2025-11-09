@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Call the webhook handler
-    await paymentsWebhook(body, signature, supabase)
+    await paymentsWebhook(body, signature, supabase as ReturnType<typeof import('@supabase/supabase-js').createClient>)
 
     return NextResponse.json({ received: true })
   } catch (error) {

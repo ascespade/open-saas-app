@@ -20,7 +20,7 @@ import { Label } from '@/src/components/ui/label'
 import { Progress } from '@/src/components/ui/progress'
 import { toast } from '@/src/hooks/use-toast'
 import { cn } from '@/src/lib/utils'
-import { uploadFileWithProgress, validateFile } from '@/src/file-upload/fileUploading'
+import { uploadFileWithProgress, validateFile, type FileWithValidType } from '@/src/file-upload/fileUploading'
 import { ALLOWED_FILE_TYPES } from '@/src/file-upload/validation'
 
 export default function FileUploadPage() {
@@ -84,22 +84,30 @@ export default function FileUploadPage() {
       }
 
       const file = formDataFileUpload
-      const fileType = file.type as typeof ALLOWED_FILE_TYPES[number]
-
-      if (!validateFile(file)) {
+      let validatedFile: ReturnType<typeof validateFile>
+      try {
+        validatedFile = validateFile(file)
+      } catch (error) {
+        toast({
+          title: 'Invalid file',
+          description: error instanceof Error ? error.message : 'File validation failed',
+          variant: 'destructive',
+        })
         return
       }
 
+      const fileType = validatedFile.type as typeof ALLOWED_FILE_TYPES[number]
+
       const { s3UploadUrl, s3UploadFields, s3Key } = await createUploadUrl(
         fileType,
-        file.name
+        validatedFile.name
       )
 
       await uploadFileWithProgress({
-        file,
+        file: validatedFile,
         s3UploadUrl,
         s3UploadFields,
-        onProgress: (percent) => {
+        setUploadProgressPercent: (percent: number) => {
           setUploadProgressPercent(percent)
         },
       })

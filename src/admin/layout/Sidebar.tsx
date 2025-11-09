@@ -26,8 +26,8 @@ interface SidebarProps {
 const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
   const pathname = usePathname()
 
-  const trigger = useRef<any>(null)
-  const sidebar = useRef<any>(null)
+  const trigger = useRef<HTMLButtonElement | null>(null)
+  const sidebar = useRef<HTMLDivElement | null>(null)
 
   const storedSidebarExpanded = localStorage.getItem('sidebar-expanded')
   const [sidebarExpanded, setSidebarExpanded] = useState(

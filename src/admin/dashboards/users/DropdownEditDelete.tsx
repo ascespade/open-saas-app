@@ -1,4 +1,4 @@
-import { Ellipsis, SquarePen, Trash2 } from "lucide-react";
+import { MoreVertical, SquarePen, Trash2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,7 +11,7 @@ const DropdownEditDelete = () => {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button>
-          <Ellipsis className="size-4" />
+          <MoreVertical className="size-4" />
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-40">

@@ -4,7 +4,7 @@ import { stripeWebhook } from './stripe/webhook'
 export const paymentsWebhook = async (
   body: string,
   signature: string,
-  supabase: any,
+  supabase: ReturnType<typeof import('@supabase/supabase-js').createClient>,
 ) => {
   // Convert to Express-like request format
   const request = {
@@ -12,14 +12,20 @@ export const paymentsWebhook = async (
     headers: {
       'stripe-signature': signature,
     },
-  } as any
+  } as {
+    body: string
+    headers: { 'stripe-signature': string }
+  }
 
   const response = {
-    json: (data: any) => data,
+    json: (data: unknown) => data,
     status: (code: number) => ({
-      json: (data: any) => ({ status: code, data }),
+      json: (data: unknown) => ({ status: code, data }),
     }),
-  } as any
+  } as {
+    json: (data: unknown) => unknown
+    status: (code: number) => { json: (data: unknown) => { status: number; data: unknown } }
+  }
 
   // Call the appropriate webhook handler based on payment processor
   if (paymentProcessor.id === 'stripe') {
