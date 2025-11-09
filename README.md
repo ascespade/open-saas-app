@@ -1,16 +1,59 @@
-# <YOUR_APP_NAME>
+# OpenSaaS Application
 
-Built with [Wasp](https://wasp.sh), based on the [Open Saas](https://opensaas.sh) template.
+OpenSaaS application built with Wasp, connected to Neon PostgreSQL database.
 
-## UI Components
+## 🚀 Features
 
-This template includes [ShadCN UI](https://ui.shadcn.com/) v2 for beautiful, accessible React components. See [SHADCN_SETUP.md](./SHADCN_SETUP.md) for details on how to use ShadCN components in your app.
+- Full-stack React + Node.js application
+- Authentication system (Email/Password)
+- Database migrations ready
+- Admin dashboard
+- Payment integration ready (Stripe/Lemon Squeezy)
+- File upload support (AWS S3)
+- Analytics integration ready
 
-## Development
+## 📋 Prerequisites
 
-### Running locally
+- Node.js >= 22.12
+- Wasp CLI installed
+- Neon PostgreSQL database (already configured)
 
-- Make sure you have the `.env.client` and `.env.server` files with correct dev values in the root of the project.
-- Run the database with `wasp start db` and leave it running.
-- Run `wasp start` and leave it running.
-- [OPTIONAL]: If this is the first time starting the app, or you've just made changes to your entities/prisma schema, also run `wasp db migrate-dev`.
+## 🛠️ Setup
+
+1. Install dependencies:
+   ```bash
+   wasp start
+   ```
+
+2. Environment variables are configured in:
+   - `.env.server` - Server-side environment variables
+   - `.env.client` - Client-side environment variables
+
+3. Database is already connected to Neon PostgreSQL
+
+## 🗄️ Database
+
+The application is connected to a Neon PostgreSQL database. All migrations have been run and the database is ready to use.
+
+## 📝 Environment Variables
+
+See `.env.server.example` and `.env.client.example` for all available configuration options.
+
+**Important:** Never commit `.env.server` or `.env.client` files to version control.
+
+## 🚀 Development
+
+Start the development server:
+```bash
+wasp start
+```
+
+## 📚 Documentation
+
+For more information, visit:
+- [OpenSaaS Documentation](https://docs.opensaas.sh)
+- [Wasp Documentation](https://wasp.sh/docs)
+
+## 📄 License
+
+This project is open-source and free to use.
