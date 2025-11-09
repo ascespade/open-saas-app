@@ -1,7 +1,7 @@
 'use client'
 
 import { CheckCircle } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { usePayment } from '@/hooks/usePayment'
@@ -65,13 +65,13 @@ const PricingPage = () => {
     user.subscription_status !== SubscriptionStatus.Deleted
 
   // Fetch customer portal URL if user is subscribed
-  useState(() => {
+  useEffect(() => {
     if (isUserSubscribed) {
       getCustomerPortalUrl()
         .then(setCustomerPortalUrl)
         .catch(() => setCustomerPortalUrl(null))
     }
-  })
+  }, [isUserSubscribed, getCustomerPortalUrl])
 
   async function handleBuyNowClick(paymentPlanId: PaymentPlanId) {
     if (!user) {

@@ -1,20 +1,22 @@
-import { ArrowDown, ArrowUp, Eye } from "lucide-react";
-import { Card, CardContent, CardHeader } from "../../../components/ui/card";
-import { cn } from "../../../lib/utils";
+'use client'
+
+import { ArrowDown, ArrowUp, Eye } from 'lucide-react'
+import { Card, CardContent, CardHeader } from '../../../components/ui/card'
+import { cn } from '../../../lib/utils'
 
 type PageViewsStats = {
-  totalPageViews: number | undefined;
-  prevDayViewsChangePercent: string | undefined;
-};
+  totalPageViews: number | undefined
+  prevDayViewsChangePercent: string | undefined
+}
 
 const TotalPageViewsCard = ({
   totalPageViews,
   prevDayViewsChangePercent,
 }: PageViewsStats) => {
   const prevDayViewsChangePercentValue = parseInt(
-    prevDayViewsChangePercent || "",
-  );
-  const isDeltaPositive = prevDayViewsChangePercentValue > 0;
+    prevDayViewsChangePercent || '0',
+  )
+  const isDeltaPositive = prevDayViewsChangePercentValue > 0
 
   return (
     <Card>
@@ -27,7 +29,7 @@ const TotalPageViewsCard = ({
       <CardContent className="flex justify-between">
         <div>
           <h4 className="text-title-md text-foreground font-bold">
-            {totalPageViews}
+            {totalPageViews || 0}
           </h4>
           <span className="text-muted-foreground text-sm font-medium">
             Total page views
@@ -35,30 +37,30 @@ const TotalPageViewsCard = ({
         </div>
 
         <span
-          className={cn("flex items-center gap-1 text-sm font-medium", {
-            "text-success":
+          className={cn('flex items-center gap-1 text-sm font-medium', {
+            'text-success':
               isDeltaPositive &&
               prevDayViewsChangePercent &&
               prevDayViewsChangePercentValue !== 0,
-            "text-destructive":
+            'text-destructive':
               !isDeltaPositive &&
               prevDayViewsChangePercent &&
               prevDayViewsChangePercentValue !== 0,
-            "text-muted-foreground":
+            'text-muted-foreground':
               !prevDayViewsChangePercent ||
               prevDayViewsChangePercentValue === 0,
           })}
         >
           {prevDayViewsChangePercent && prevDayViewsChangePercentValue !== 0
-            ? `${prevDayViewsChangePercent}%`
-            : "-"}
+            ? `${Math.abs(prevDayViewsChangePercentValue)}%`
+            : '-'}
           {prevDayViewsChangePercent &&
             prevDayViewsChangePercentValue !== 0 &&
             (isDeltaPositive ? <ArrowUp /> : <ArrowDown />)}
         </span>
       </CardContent>
     </Card>
-  );
-};
+  )
+}
 
-export default TotalPageViewsCard;
+export default TotalPageViewsCard

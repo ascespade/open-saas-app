@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { paymentsWebhook } from '@/src/payment/webhook'
 import { createClient } from '@/lib/supabase/server'
+import { paymentsWebhook } from '@/src/payment/webhook'
 
 export async function POST(request: NextRequest) {
   try {
@@ -10,17 +10,25 @@ export async function POST(request: NextRequest) {
                       request.headers.get('x-lemonsqueezy-signature') || 
                       ''
 
+    if (!signature) {
+      return NextResponse.json(
+        { error: 'Webhook signature not provided' },
+        { status: 400 }
+      )
+    }
+
     // Call the webhook handler
-    await paymentsWebhook({
-      body,
-      signature,
-      // Pass Supabase client for database operations
-      supabase,
-    })
+    await paymentsWebhook(body, signature, supabase)
 
     return NextResponse.json({ received: true })
   } catch (error) {
     console.error('Error handling webhook:', error)
+    if (error instanceof Error && error.message.includes('Unhandled')) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: 422 }
+      )
+    }
     return NextResponse.json(
       { error: 'Webhook handler failed' },
       { status: 500 }

@@ -1,92 +1,119 @@
-import { X } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useAuth } from "wasp/client/auth";
-import {
-  getPaginatedUsers,
-  updateIsUserAdminById,
-  useQuery,
-} from "wasp/client/operations";
-import { type User } from "wasp/entities";
-import useDebounce from "../../../client/hooks/useDebounce";
-import { Button } from "../../../components/ui/button";
-import { Checkbox } from "../../../components/ui/checkbox";
-import { Input } from "../../../components/ui/input";
-import { Label } from "../../../components/ui/label";
+'use client'
+
+import { X } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { useAuth } from '@/contexts/AuthContext'
+import { useUsers } from '@/hooks/useUsers'
+import useDebounce from '../../../client/hooks/useDebounce'
+import { Button } from '../../../components/ui/button'
+import { Checkbox } from '../../../components/ui/checkbox'
+import { Input } from '../../../components/ui/input'
+import { Label } from '../../../components/ui/label'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../../../components/ui/select";
-import { Switch } from "../../../components/ui/switch";
-import { SubscriptionStatus } from "../../../payment/plans";
-import LoadingSpinner from "../../layout/LoadingSpinner";
-import DropdownEditDelete from "./DropdownEditDelete";
+} from '../../../components/ui/select'
+import { Switch } from '../../../components/ui/switch'
+import { SubscriptionStatus } from '../../../payment/plans'
+import LoadingSpinner from '../../layout/LoadingSpinner'
+import DropdownEditDelete from './DropdownEditDelete'
+import type { User } from '@/types/database'
 
-function AdminSwitch({ id, isAdmin }: Pick<User, "id" | "isAdmin">) {
-  const { data: currentUser } = useAuth();
-  const isCurrentUser = currentUser?.id === id;
+function AdminSwitch({ id, isAdmin }: Pick<User, 'id' | 'is_admin'>) {
+  const { user: currentUser } = useAuth()
+  const { updateIsUserAdminById, loading } = useUsers()
+  const isCurrentUser = currentUser?.id === id
 
   return (
     <Switch
       checked={isAdmin}
-      onCheckedChange={(value) =>
-        updateIsUserAdminById({ id: id, isAdmin: value })
-      }
-      disabled={isCurrentUser}
+      onCheckedChange={async (value) => {
+        try {
+          await updateIsUserAdminById(id, value)
+        } catch (error) {
+          console.error('Error updating admin status:', error)
+        }
+      }}
+      disabled={isCurrentUser || loading}
     />
-  );
+  )
 }
 
 const UsersTable = () => {
-  const [currentPage, setCurrentPage] = useState(1);
-  const [emailFilter, setEmailFilter] = useState<string | undefined>(undefined);
+  const { getPaginatedUsers, loading } = useUsers()
+  const [currentPage, setCurrentPage] = useState(1)
+  const [emailFilter, setEmailFilter] = useState<string | undefined>(undefined)
   const [isAdminFilter, setIsAdminFilter] = useState<boolean | undefined>(
     undefined,
-  );
+  )
   const [subscriptionStatusFilter, setSubscriptionStatusFilter] = useState<
     Array<SubscriptionStatus | null>
-  >([]);
+  >([])
+  const [data, setData] = useState<{
+    users: Pick<
+      User,
+      | 'id'
+      | 'email'
+      | 'username'
+      | 'subscription_status'
+      | 'payment_processor_user_id'
+      | 'is_admin'
+    >[]
+    totalPages: number
+  } | null>(null)
 
-  const debouncedEmailFilter = useDebounce(emailFilter, 300);
+  const debouncedEmailFilter = useDebounce(emailFilter, 300)
 
-  const skipPages = currentPage - 1;
+  const skipPages = currentPage - 1
 
-  const { data, isLoading } = useQuery(getPaginatedUsers, {
-    skipPages,
-    filter: {
-      ...(debouncedEmailFilter && { emailContains: debouncedEmailFilter }),
-      ...(isAdminFilter !== undefined && { isAdmin: isAdminFilter }),
-      ...(subscriptionStatusFilter.length > 0 && {
-        subscriptionStatusIn: subscriptionStatusFilter,
-      }),
-    },
-  });
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const result = await getPaginatedUsers({
+          skipPages,
+          filter: {
+            ...(debouncedEmailFilter && { emailContains: debouncedEmailFilter }),
+            ...(isAdminFilter !== undefined && { isAdmin: isAdminFilter }),
+            ...(subscriptionStatusFilter.length > 0 && {
+              subscriptionStatusIn: subscriptionStatusFilter,
+            }),
+          },
+        })
+        setData(result)
+      } catch (error) {
+        console.error('Error fetching users:', error)
+      }
+    }
+
+    fetchUsers()
+  }, [skipPages, debouncedEmailFilter, isAdminFilter, subscriptionStatusFilter, getPaginatedUsers])
 
   useEffect(
     function backToPageOne() {
-      setCurrentPage(1);
+      setCurrentPage(1)
     },
     [debouncedEmailFilter, subscriptionStatusFilter, isAdminFilter],
-  );
+  )
 
   const handleStatusToggle = (status: SubscriptionStatus | null) => {
     setSubscriptionStatusFilter((prev) => {
       if (prev.includes(status)) {
-        return prev.filter((s) => s !== status);
+        return prev.filter((s) => s !== status)
       } else {
-        return [...prev, status];
+        return [...prev, status]
       }
-    });
-  };
+    })
+  }
 
   const clearAllStatusFilters = () => {
-    setSubscriptionStatusFilter([]);
-  };
+    setSubscriptionStatusFilter([])
+  }
 
   const hasActiveFilters =
-    subscriptionStatusFilter && subscriptionStatusFilter.length > 0;
+    subscriptionStatusFilter && subscriptionStatusFilter.length > 0
 
   return (
     <div className="flex flex-col gap-4">
@@ -106,8 +133,8 @@ const UsersTable = () => {
                 id="email-filter"
                 placeholder="dude@example.com"
                 onChange={(e) => {
-                  const value = e.currentTarget.value;
-                  setEmailFilter(value === "" ? undefined : value);
+                  const value = e.currentTarget.value
+                  setEmailFilter(value === '' ? undefined : value)
                 }}
               />
               <Label
@@ -197,10 +224,10 @@ const UsersTable = () => {
                 </Label>
                 <Select
                   onValueChange={(value) => {
-                    if (value === "both") {
-                      setIsAdminFilter(undefined);
+                    if (value === 'both') {
+                      setIsAdminFilter(undefined)
                     } else {
-                      setIsAdminFilter(value === "true");
+                      setIsAdminFilter(value === 'true')
                     }
                   }}
                 >
@@ -224,20 +251,20 @@ const UsersTable = () => {
                   defaultValue={currentPage}
                   max={data?.totalPages}
                   onChange={(e) => {
-                    const value = parseInt(e.currentTarget.value);
+                    const value = parseInt(e.currentTarget.value)
                     if (
                       data?.totalPages &&
                       value <= data?.totalPages &&
                       value > 0
                     ) {
-                      setCurrentPage(value);
+                      setCurrentPage(value)
                     }
                   }}
                   className="w-20"
                 />
                 <span className="text-md text-foreground">
-                  {" "}
-                  /{data?.totalPages}{" "}
+                  {' '}
+                  /{data?.totalPages}{' '}
                 </span>
               </div>
             )}
@@ -250,13 +277,13 @@ const UsersTable = () => {
               <div className="flex flex-wrap gap-2">
                 {subscriptionStatusFilter.map((status) => (
                   <Button
-                    key={status ?? "null"}
+                    key={status ?? 'null'}
                     variant="outline"
                     size="sm"
                     onClick={() => handleStatusToggle(status)}
                   >
                     <X className="mr-1 h-3 w-3" />
-                    {status ?? "Has Not Subscribed"}
+                    {status ?? 'Has Not Subscribed'}
                   </Button>
                 ))}
               </div>
@@ -281,7 +308,7 @@ const UsersTable = () => {
             <p className="font-medium"></p>
           </div>
         </div>
-        {isLoading && <LoadingSpinner />}
+        {loading && <LoadingSpinner />}
         {!!data?.users &&
           data?.users?.length > 0 &&
           data.users.map((user) => (
@@ -297,17 +324,17 @@ const UsersTable = () => {
               </div>
               <div className="col-span-2 flex items-center">
                 <p className="text-foreground text-sm">
-                  {user.subscriptionStatus}
+                  {user.subscription_status}
                 </p>
               </div>
               <div className="col-span-2 flex items-center">
                 <p className="text-muted-foreground text-sm">
-                  {user.paymentProcessorUserId}
+                  {user.payment_processor_user_id}
                 </p>
               </div>
               <div className="col-span-1 flex items-center">
                 <div className="text-foreground text-sm">
-                  <AdminSwitch {...user} />
+                  <AdminSwitch id={user.id} isAdmin={user.is_admin} />
                 </div>
               </div>
               <div className="col-span-1 flex items-center">
@@ -317,7 +344,7 @@ const UsersTable = () => {
           ))}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default UsersTable;
+export default UsersTable

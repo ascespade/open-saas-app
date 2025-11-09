@@ -1,13 +1,15 @@
-import { ArrowDown, ArrowUp, ShoppingBag } from "lucide-react";
-import { useMemo } from "react";
-import { type DailyStatsProps } from "../../../analytics/stats";
-import { Card, CardContent, CardHeader } from "../../../components/ui/card";
-import { cn } from "../../../lib/utils";
+'use client'
+
+import { ArrowDown, ArrowUp, ShoppingBag } from 'lucide-react'
+import { useMemo } from 'react'
+import type { DailyStatsProps } from '../../../analytics/stats'
+import { Card, CardContent, CardHeader } from '../../../components/ui/card'
+import { cn } from '../../../lib/utils'
 
 const TotalPayingUsersCard = ({ dailyStats, isLoading }: DailyStatsProps) => {
   const isDeltaPositive = useMemo(() => {
-    return !!dailyStats?.paidUserDelta && dailyStats?.paidUserDelta > 0;
-  }, [dailyStats]);
+    return !!dailyStats?.paid_user_delta && dailyStats?.paid_user_delta > 0
+  }, [dailyStats])
 
   return (
     <Card>
@@ -20,7 +22,7 @@ const TotalPayingUsersCard = ({ dailyStats, isLoading }: DailyStatsProps) => {
       <CardContent className="flex justify-between">
         <div>
           <h4 className="text-title-md text-foreground font-bold">
-            {dailyStats?.paidUserCount}
+            {dailyStats?.paid_user_count || 0}
           </h4>
           <span className="text-muted-foreground text-sm font-medium">
             Total Paying Users
@@ -28,21 +30,21 @@ const TotalPayingUsersCard = ({ dailyStats, isLoading }: DailyStatsProps) => {
         </div>
 
         <span
-          className={cn("flex items-center gap-1 text-sm font-medium", {
-            "text-success": isDeltaPositive && !isLoading,
-            "text-destructive":
-              !isDeltaPositive && !isLoading && dailyStats?.paidUserDelta !== 0,
-            "text-muted-foreground": isLoading || !dailyStats?.paidUserDelta,
+          className={cn('flex items-center gap-1 text-sm font-medium', {
+            'text-success': isDeltaPositive && !isLoading,
+            'text-destructive':
+              !isDeltaPositive && !isLoading && dailyStats?.paid_user_delta !== 0,
+            'text-muted-foreground': isLoading || !dailyStats?.paid_user_delta,
           })}
         >
-          {isLoading ? "..." : (dailyStats?.paidUserDelta ?? "-")}
+          {isLoading ? '...' : (dailyStats?.paid_user_delta ?? '-')}
           {!isLoading &&
-            (dailyStats?.paidUserDelta ?? 0) !== 0 &&
+            (dailyStats?.paid_user_delta ?? 0) !== 0 &&
             (isDeltaPositive ? <ArrowUp /> : <ArrowDown />)}
         </span>
       </CardContent>
     </Card>
-  );
-};
+  )
+}
 
-export default TotalPayingUsersCard;
+export default TotalPayingUsersCard

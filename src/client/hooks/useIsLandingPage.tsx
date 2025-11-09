@@ -1,10 +1,12 @@
-import { useMemo } from "react";
-import { useLocation } from "react-router-dom";
+'use client'
+
+import { useMemo } from 'react'
+import { usePathname } from 'next/navigation'
 
 export const useIsLandingPage = () => {
-  const location = useLocation();
+  const pathname = usePathname()
 
   return useMemo(() => {
-    return location.pathname === "/";
-  }, [location]);
-};
+    return pathname === '/'
+  }, [pathname])
+}

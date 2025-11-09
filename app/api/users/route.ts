@@ -47,13 +47,12 @@ export async function GET(request: NextRequest) {
       .from('users')
       .select('id, email, username, subscription_status, payment_processor_user_id, is_admin', { count: 'exact' })
       .order('username', { ascending: true })
-      .range(skipPages * pageSize, (skipPages + 1) * pageSize - 1)
 
     if (emailContains) {
       query = query.ilike('email', `%${emailContains}%`)
     }
 
-    if (isAdmin !== null) {
+    if (isAdmin !== null && isAdmin !== '') {
       query = query.eq('is_admin', isAdmin === 'true')
     }
 
@@ -70,6 +69,9 @@ export async function GET(request: NextRequest) {
         query = query.in('subscription_status', desiredStatuses)
       }
     }
+
+    // Apply pagination
+    query = query.range(skipPages * pageSize, (skipPages + 1) * pageSize - 1)
 
     const { data: users, error, count } = await query
 

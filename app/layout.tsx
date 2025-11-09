@@ -3,6 +3,8 @@ import { Inter } from 'next/font/google'
 import '../src/client/Main.css'
 import { Toaster } from '@/src/components/ui/toaster'
 import { AuthProvider } from '@/contexts/AuthContext'
+import CookieConsentBanner from '@/src/client/components/cookie-consent/Banner'
+import { AppLayout } from '@/components/layout/AppLayout'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -37,10 +39,11 @@ export default function RootLayout({
       </head>
       <body className={inter.className}>
         <AuthProvider>
-          <div className="bg-background text-foreground min-h-screen">
+          <AppLayout>
             {children}
-          </div>
+          </AppLayout>
           <Toaster />
+          <CookieConsentBanner />
         </AuthProvider>
       </body>
     </html>

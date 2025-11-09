@@ -1,7 +1,11 @@
-import { Link as WaspRouterLink, routes } from "wasp/client/router";
+'use client'
+
+import Link from 'next/link'
+
 interface BreadcrumbProps {
-  pageName: string;
+  pageName: string
 }
+
 const Breadcrumb = ({ pageName }: BreadcrumbProps) => {
   return (
     <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -12,14 +16,14 @@ const Breadcrumb = ({ pageName }: BreadcrumbProps) => {
       <nav>
         <ul className="flex items-center gap-1">
           <li>
-            <WaspRouterLink to={routes.AdminRoute.to}>Dashboard</WaspRouterLink>
+            <Link href="/admin">Dashboard</Link>
           </li>
           <li>/</li>
           <li className="font-medium">{pageName}</li>
         </ul>
       </nav>
     </div>
-  );
-};
+  )
+}
 
-export default Breadcrumb;
+export default Breadcrumb

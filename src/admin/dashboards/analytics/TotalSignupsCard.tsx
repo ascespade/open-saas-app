@@ -1,13 +1,15 @@
-import { ArrowUp, UsersRound } from "lucide-react";
-import { useMemo } from "react";
-import { type DailyStatsProps } from "../../../analytics/stats";
-import { Card, CardContent, CardHeader } from "../../../components/ui/card";
-import { cn } from "../../../lib/utils";
+'use client'
+
+import { ArrowUp, UsersRound } from 'lucide-react'
+import { useMemo } from 'react'
+import type { DailyStatsProps } from '../../../analytics/stats'
+import { Card, CardContent, CardHeader } from '../../../components/ui/card'
+import { cn } from '../../../lib/utils'
 
 const TotalSignupsCard = ({ dailyStats, isLoading }: DailyStatsProps) => {
   const isDeltaPositive = useMemo(() => {
-    return !!dailyStats?.userDelta && dailyStats.userDelta > 0;
-  }, [dailyStats]);
+    return !!dailyStats?.user_delta && dailyStats.user_delta > 0
+  }, [dailyStats])
 
   return (
     <Card>
@@ -20,7 +22,7 @@ const TotalSignupsCard = ({ dailyStats, isLoading }: DailyStatsProps) => {
       <CardContent className="flex justify-between">
         <div>
           <h4 className="text-title-md text-foreground font-bold">
-            {dailyStats?.userCount}
+            {dailyStats?.user_count || 0}
           </h4>
           <span className="text-muted-foreground text-sm font-medium">
             Total Signups
@@ -28,19 +30,19 @@ const TotalSignupsCard = ({ dailyStats, isLoading }: DailyStatsProps) => {
         </div>
 
         <span
-          className={cn("flex items-center gap-1 text-sm font-medium", {
-            "text-success": isDeltaPositive && !isLoading,
-            "text-destructive":
-              !isDeltaPositive && !isLoading && dailyStats?.userDelta !== 0,
-            "text-muted-foreground": isLoading || !dailyStats?.userDelta,
+          className={cn('flex items-center gap-1 text-sm font-medium', {
+            'text-success': isDeltaPositive && !isLoading,
+            'text-destructive':
+              !isDeltaPositive && !isLoading && dailyStats?.user_delta !== 0,
+            'text-muted-foreground': isLoading || !dailyStats?.user_delta,
           })}
         >
-          {isLoading ? "..." : (dailyStats?.userDelta ?? "-")}
-          {!isLoading && (dailyStats?.userDelta ?? 0) > 0 && <ArrowUp />}
+          {isLoading ? '...' : (dailyStats?.user_delta ?? '-')}
+          {!isLoading && (dailyStats?.user_delta ?? 0) > 0 && <ArrowUp />}
         </span>
       </CardContent>
     </Card>
-  );
-};
+  )
+}
 
-export default TotalSignupsCard;
+export default TotalSignupsCard

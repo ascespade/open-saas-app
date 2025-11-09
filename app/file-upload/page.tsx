@@ -6,7 +6,7 @@ import type { File } from '@/types/database'
 import { Download, Trash } from 'lucide-react'
 import { Alert, AlertDescription } from '@/src/components/ui/alert'
 import { Button } from '@/src/components/ui/button'
-import { Card, CardContent, CardTitle } from '@/src/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/src/components/ui/card'
 import {
   Dialog,
   DialogContent,

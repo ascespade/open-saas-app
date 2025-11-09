@@ -1,9 +1,11 @@
-import { type PageViewSource } from "wasp/entities";
+'use client'
+
+import type { PageViewSource } from '@/types/database'
 
 const SourcesTable = ({
   sources,
 }: {
-  sources: PageViewSource[] | undefined;
+  sources: PageViewSource[] | undefined
 }) => {
   return (
     <div className="border-border bg-card shadow-default sm:px-7.5 rounded-sm border px-5 pb-2.5 pt-6 xl:pb-1">
@@ -31,8 +33,8 @@ const SourcesTable = ({
         </div>
 
         {sources && sources.length > 0 ? (
-          sources.map((source) => (
-            <div className="border-border grid grid-cols-3 border-b">
+          sources.map((source, index) => (
+            <div key={`${source.date}-${source.name}-${index}`} className="border-border grid grid-cols-3 border-b">
               <div className="flex items-center gap-3 p-2.5 xl:p-5">
                 <p className="text-foreground">{source.name}</p>
               </div>
@@ -48,12 +50,12 @@ const SourcesTable = ({
           ))
         ) : (
           <div className="flex items-center justify-center p-2.5 xl:p-5">
-            <p className="text-foreground">No data to display</p>
+            <p className="text-muted-foreground">No sources available</p>
           </div>
         )}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default SourcesTable;
+export default SourcesTable

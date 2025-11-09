@@ -1,22 +1,24 @@
-import { ApexOptions } from "apexcharts";
-import { useEffect, useMemo, useState } from "react";
-import ReactApexChart from "react-apexcharts";
-import { type DailyStatsProps } from "../../../analytics/stats";
+'use client'
+
+import { ApexOptions } from 'apexcharts'
+import { useEffect, useMemo, useState } from 'react'
+import ReactApexChart from 'react-apexcharts'
+import type { DailyStatsProps } from '../../../analytics/stats'
 
 const options: ApexOptions = {
   legend: {
     show: false,
-    position: "top",
-    horizontalAlign: "left",
+    position: 'top',
+    horizontalAlign: 'left',
   },
-  colors: ["#3C50E0", "#80CAEE"],
+  colors: ['#3C50E0', '#80CAEE'],
   chart: {
-    fontFamily: "system-ui, sans-serif",
+    fontFamily: 'system-ui, sans-serif',
     height: 335,
-    type: "area",
+    type: 'area',
     dropShadow: {
       enabled: true,
-      color: "#623CEA14",
+      color: '#623CEA14',
       top: 10,
       blur: 4,
       left: 0,
@@ -47,12 +49,8 @@ const options: ApexOptions = {
   ],
   stroke: {
     width: [2, 2],
-    curve: "straight",
+    curve: 'straight',
   },
-  // labels: {
-  //   show: false,
-  //   position: "top",
-  // },
   grid: {
     xaxis: {
       lines: {
@@ -70,20 +68,15 @@ const options: ApexOptions = {
   },
   markers: {
     size: 4,
-    colors: "#fff",
-    strokeColors: ["#3056D3", "#80CAEE"],
+    strokeColors: '#fff',
     strokeWidth: 3,
-    strokeOpacity: 0.9,
-    strokeDashArray: 0,
-    fillOpacity: 1,
-    discrete: [],
     hover: {
-      size: undefined,
-      sizeOffset: 5,
+      size: 8,
     },
   },
   xaxis: {
-    type: "category",
+    type: 'category',
+    categories: [],
     axisBorder: {
       show: false,
     },
@@ -94,87 +87,90 @@ const options: ApexOptions = {
   yaxis: {
     title: {
       style: {
-        fontSize: "0px",
+        fontSize: '0px',
       },
     },
     min: 0,
     max: 100,
   },
-};
+}
 
 interface ChartOneState {
   series: {
-    name: string;
-    data: number[];
-  }[];
+    name: string
+    data: number[]
+  }[]
 }
 
 const RevenueAndProfitChart = ({ weeklyStats, isLoading }: DailyStatsProps) => {
   const dailyRevenueArray = useMemo(() => {
     if (!!weeklyStats && weeklyStats?.length > 0) {
       const sortedWeeks = weeklyStats?.sort((a, b) => {
-        return new Date(a.date).getTime() - new Date(b.date).getTime();
-      });
-      return sortedWeeks.map((stat) => stat.totalRevenue);
+        return new Date(a.date).getTime() - new Date(b.date).getTime()
+      })
+      return sortedWeeks.map((stat) => stat.total_revenue || 0)
     }
-  }, [weeklyStats]);
+    return []
+  }, [weeklyStats])
+
+  const dailyProfitArray = useMemo(() => {
+    if (!!weeklyStats && weeklyStats?.length > 0) {
+      const sortedWeeks = weeklyStats?.sort((a, b) => {
+        return new Date(a.date).getTime() - new Date(b.date).getTime()
+      })
+      return sortedWeeks.map((stat) => stat.total_profit || 0)
+    }
+    return []
+  }, [weeklyStats])
 
   const daysOfWeekArr = useMemo(() => {
     if (!!weeklyStats && weeklyStats?.length > 0) {
-      const datesArr = weeklyStats?.map((stat) => {
-        // get day of week, month, and day of month
-        const dateArr = stat.date.toString().split(" ");
-        return dateArr.slice(0, 3).join(" ");
-      });
-      return datesArr;
+      const sortedWeeks = weeklyStats?.sort((a, b) => {
+        return new Date(a.date).getTime() - new Date(b.date).getTime()
+      })
+      const datesArr = sortedWeeks?.map((stat) => {
+        const date = new Date(stat.date)
+        return date.toLocaleDateString('en-US', {
+          weekday: 'short',
+          month: 'short',
+          day: 'numeric',
+        })
+      })
+      return datesArr
     }
-  }, [weeklyStats]);
+    return []
+  }, [weeklyStats])
 
   const [state, setState] = useState<ChartOneState>({
     series: [
       {
-        name: "Profit",
-        data: [4, 7, 10, 11, 13, 14, 17],
+        name: 'Revenue',
+        data: [],
+      },
+      {
+        name: 'Profit',
+        data: [],
       },
     ],
-  });
-  const [chartOptions, setChartOptions] = useState<ApexOptions>(options);
+  })
+  const [chartOptions, setChartOptions] = useState<ApexOptions>(options)
 
   useEffect(() => {
-    if (dailyRevenueArray && dailyRevenueArray.length > 0) {
-      setState((prevState) => {
-        // Check if a "Revenue" series already exists
-        const existingSeriesIndex = prevState.series.findIndex(
-          (series) => series.name === "Revenue",
-        );
-
-        if (existingSeriesIndex >= 0) {
-          // Update existing "Revenue" series data
-          return {
-            ...prevState,
-            series: prevState.series.map((serie, index) => {
-              if (index === existingSeriesIndex) {
-                return { ...serie, data: dailyRevenueArray };
-              }
-              return serie;
-            }),
-          };
-        } else {
-          // Add "Revenue" series as it does not exist yet
-          return {
-            ...prevState,
-            series: [
-              ...prevState.series,
-              {
-                name: "Revenue",
-                data: dailyRevenueArray,
-              },
-            ],
-          };
-        }
-      });
+    if (dailyRevenueArray.length > 0 || dailyProfitArray.length > 0) {
+      setState({
+        series: [
+          {
+            name: 'Revenue',
+            data: dailyRevenueArray,
+          },
+          {
+            name: 'Profit',
+            data: dailyProfitArray,
+          },
+        ],
+      })
     }
-  }, [dailyRevenueArray]);
+  }, [dailyRevenueArray, dailyProfitArray])
 
   useEffect(() => {
     if (
@@ -183,6 +179,7 @@ const RevenueAndProfitChart = ({ weeklyStats, isLoading }: DailyStatsProps) => {
       !!dailyRevenueArray &&
       dailyRevenueArray?.length > 0
     ) {
+      const maxValue = Math.max(...dailyRevenueArray, ...dailyProfitArray)
       setChartOptions({
         ...options,
         xaxis: {
@@ -191,52 +188,45 @@ const RevenueAndProfitChart = ({ weeklyStats, isLoading }: DailyStatsProps) => {
         },
         yaxis: {
           ...options.yaxis,
-          // get the min & max values to the neareast hundred
-          max: Math.ceil(Math.max(...dailyRevenueArray) / 100) * 100,
-          min: Math.floor(Math.min(...dailyRevenueArray) / 100) * 100,
+          max: Math.ceil(maxValue / 100) * 100,
+          min: 0,
         },
-      });
+      })
     }
-  }, [daysOfWeekArr, dailyRevenueArray]);
+  }, [daysOfWeekArr, dailyRevenueArray, dailyProfitArray])
+
+  if (isLoading) {
+    return (
+      <div className="border-border bg-card shadow-default sm:px-7.5 rounded-sm border px-5 pb-2.5 pt-6 xl:pb-1">
+        <div className="flex h-[335px] items-center justify-center">
+          <p className="text-muted-foreground">Loading chart...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <div className="border-border bg-card pt-7.5 shadow-default sm:px-7.5 col-span-12 rounded-sm border px-5 pb-5 xl:col-span-8">
-      <div className="flex flex-wrap items-start justify-between gap-3 sm:flex-nowrap">
-        <div className="flex w-full flex-wrap gap-3 sm:gap-5">
-          <div className="min-w-47.5 flex">
-            <span className="border-primary mr-2 mt-1 flex h-4 w-full max-w-4 items-center justify-center rounded-full border">
-              <span className="bg-primary block h-2.5 w-full max-w-2.5 rounded-full"></span>
-            </span>
-            <div className="w-full">
-              <p className="text-primary font-semibold">Total Profit</p>
-              <p className="text-muted-foreground text-sm font-medium">
-                Last 7 Days
-              </p>
-            </div>
+    <div className="border-border bg-card shadow-default sm:px-7.5 rounded-sm border px-5 pb-2.5 pt-6 xl:pb-1">
+      <div>
+        <div className="flex w-full flex-col gap-0 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h4 className="text-foreground text-xl font-semibold">
+              Revenue & Profit
+            </h4>
           </div>
-          <div className="min-w-47.5 flex">
-            <span className="border-secondary mr-2 mt-1 flex h-4 w-full max-w-4 items-center justify-center rounded-full border">
-              <span className="bg-secondary block h-2.5 w-full max-w-2.5 rounded-full"></span>
-            </span>
-            <div className="w-full">
-              <p className="text-secondary font-semibold">Total Revenue</p>
-              <p className="text-muted-foreground text-sm font-medium">
-                Last 7 Days
-              </p>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <span className="bg-primary block h-3 w-3 rounded-full"></span>
+              <span className="text-muted-foreground text-sm font-medium">
+                Revenue
+              </span>
             </div>
-          </div>
-        </div>
-        <div className="max-w-45 flex w-full justify-end">
-          <div className="bg-muted inline-flex items-center rounded-md p-1.5">
-            <button className="bg-background text-foreground shadow-card hover:bg-background hover:shadow-card rounded px-3 py-1 text-xs font-medium">
-              Day
-            </button>
-            <button className="text-muted-foreground hover:bg-background hover:shadow-card rounded px-3 py-1 text-xs font-medium">
-              Week
-            </button>
-            <button className="text-muted-foreground hover:bg-background hover:shadow-card rounded px-3 py-1 text-xs font-medium">
-              Month
-            </button>
+            <div className="flex items-center gap-2">
+              <span className="bg-[#80CAEE] block h-3 w-3 rounded-full"></span>
+              <span className="text-muted-foreground text-sm font-medium">
+                Profit
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -252,7 +242,7 @@ const RevenueAndProfitChart = ({ weeklyStats, isLoading }: DailyStatsProps) => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default RevenueAndProfitChart;
+export default RevenueAndProfitChart
