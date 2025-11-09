@@ -9,14 +9,19 @@ export async function createClient() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
+        // @ts-expect-error - getAll is a valid method in Next.js cookies API
         getAll() {
           return cookieStore.getAll()
         },
         setAll(cookiesToSet: Array<{ name: string; value: string; options?: unknown }>) {
           try {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options as unknown)
-            )
+            cookiesToSet.forEach(({ name, value, options }) => {
+              if (options) {
+                cookieStore.set(name, value, options as Record<string, unknown>)
+              } else {
+                cookieStore.set(name, value)
+              }
+            })
           } catch {
             // The `setAll` method was called from a Server Component.
             // This can be ignored if you have middleware refreshing

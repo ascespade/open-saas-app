@@ -30,7 +30,7 @@ interface PaymentPlanCard {
   features: string[]
 }
 
-export const paymentPlanCards: Record<PaymentPlanId, PaymentPlanCard> = {
+const paymentPlanCards: Record<PaymentPlanId, PaymentPlanCard> = {
   [PaymentPlanId.Hobby]: {
     name: prettyPaymentPlanName(PaymentPlanId.Hobby),
     price: '$9.99',

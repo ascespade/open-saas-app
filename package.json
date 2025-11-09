@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.490.0",
+    "@aws-sdk/s3-presigned-post": "^3.927.0",
     "@aws-sdk/s3-request-presigner": "^3.490.0",
     "@hookform/resolvers": "^3.3.4",
     "@lemonsqueezy/lemonsqueezy.js": "^2.0.0",
@@ -33,7 +34,9 @@
     "@radix-ui/react-toast": "^1.1.5",
     "@supabase/ssr": "^0.1.0",
     "@supabase/supabase-js": "^2.39.0",
+    "apexcharts": "^5.3.6",
     "aws-sdk": "^2.1529.0",
+    "axios": "^1.13.2",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "date-fns": "^3.3.1",
@@ -41,6 +44,7 @@
     "next": "^14.2.0",
     "openai": "^4.28.0",
     "react": "^18.3.0",
+    "react-apexcharts": "^1.8.0",
     "react-day-picker": "^8.10.0",
     "react-dnd": "^16.0.1",
     "react-dnd-html5-backend": "^16.0.1",
@@ -48,6 +52,7 @@
     "react-hook-form": "^7.50.0",
     "stripe": "^14.10.0",
     "tailwind-merge": "^2.2.0",
+    "vanilla-cookieconsent": "^3.1.0",
     "zod": "^3.22.4"
   },
   "devDependencies": {

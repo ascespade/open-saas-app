@@ -38,10 +38,12 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
   useEffect(() => {
     const clickHandler = ({ target }: MouseEvent) => {
       if (!sidebar.current || !trigger.current) return
+      const targetNode = target as Node | null
       if (
         !sidebarOpen ||
-        sidebar.current.contains(target) ||
-        trigger.current.contains(target)
+        !targetNode ||
+        sidebar.current.contains(targetNode) ||
+        trigger.current.contains(targetNode)
       )
         return
       setSidebarOpen(false)

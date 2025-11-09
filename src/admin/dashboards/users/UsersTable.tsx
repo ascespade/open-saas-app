@@ -334,7 +334,7 @@ const UsersTable = () => {
               </div>
               <div className="col-span-1 flex items-center">
                 <div className="text-foreground text-sm">
-                  <AdminSwitch id={user.id} isAdmin={user.is_admin} />
+                  <AdminSwitch id={user.id} is_admin={user.is_admin} />
                 </div>
               </div>
               <div className="col-span-1 flex items-center">

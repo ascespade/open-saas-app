@@ -11,6 +11,7 @@ export async function updateSession(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
+        // @ts-expect-error - getAll is a valid method in Next.js cookies API
         getAll() {
           return request.cookies.getAll()
         },
@@ -19,9 +20,13 @@ export async function updateSession(request: NextRequest) {
           supabaseResponse = NextResponse.next({
             request,
           })
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options as unknown)
-          )
+          cookiesToSet.forEach(({ name, value, options }) => {
+            if (options) {
+              supabaseResponse.cookies.set(name, value, options as Record<string, unknown>)
+            } else {
+              supabaseResponse.cookies.set(name, value)
+            }
+          })
         },
       },
     }

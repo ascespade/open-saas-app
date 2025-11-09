@@ -64,7 +64,7 @@ const Header = (props: {
             <DarkModeSwitcher />
             <MessageButton />
           </ul>
-          <UserDropdown user={user} />
+          {user && <UserDropdown user={user} />}
         </div>
       </div>
     </header>
