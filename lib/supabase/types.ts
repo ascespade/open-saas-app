@@ -1,0 +1,28 @@
+// Re-export database types for convenience
+export type { Database } from '@/types/database'
+export type {
+  User,
+  GptResponse,
+  Task,
+  File,
+  DailyStats,
+  PageViewSource,
+  Log,
+  ContactFormMessage,
+  UserInsert,
+  GptResponseInsert,
+  TaskInsert,
+  FileInsert,
+  DailyStatsInsert,
+  PageViewSourceInsert,
+  LogInsert,
+  ContactFormMessageInsert,
+  UserUpdate,
+  GptResponseUpdate,
+  TaskUpdate,
+  FileUpdate,
+  DailyStatsUpdate,
+  PageViewSourceUpdate,
+  LogUpdate,
+  ContactFormMessageUpdate,
+} from '@/types/database'
